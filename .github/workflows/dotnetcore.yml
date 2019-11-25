@@ -2,7 +2,7 @@ name: Build
 on: [create, push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
     - name: Setup .NET Core
@@ -10,7 +10,7 @@ jobs:
       with:
         dotnet-version: 3.0.100
     - name: Build and Test
-      run: ./build.sh
+      run: ./build.ps1
     - name: Publish NuGet Package
       if: |
         (github.event_name == 'create' && github.event.ref_type == 'tag') ||
