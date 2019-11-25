@@ -15,6 +15,6 @@ jobs:
       if: |
         (github.event_name == 'create' && github.event.ref_type == 'tag') ||
         (github.event_name == 'push' && github.event.ref == 'refs/heads/master')
-      run: dotnet nuget push ./drop/*.nupkg -k $NUGET_KEY
+      run: dotnet nuget push ./drop/*.nupkg -k $env:NUGET_KEY
       env:
         NUGET_KEY: ${{ secrets.NUGET_KEY }}
