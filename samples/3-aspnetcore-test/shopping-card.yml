@@ -1,0 +1,35 @@
+# Create then get a shopping cart should retain properties
+requests:
+
+- post: /api/shoppingcart
+  body: |
+    {
+      "lines": [
+        { "name": "Bumblebee", "quatity": 1 }
+      ]
+    }
+  response: |
+    { "id": "{id}" }
+
+- get: /api/shoppingcart/{id}
+  response: |
+    {
+      "lines": [
+        { "name": "Bumblebee", "quatity": 1 }
+      ]
+    }
+---
+# Create then delete a shopping cart
+requests:
+
+- post: /api/shoppingcart
+  body: |
+    {
+      "lines": [
+        { "name": "Bumblebee", "quatity": 1 }
+      ]
+    }
+  response: |
+    { "id": "{id}" }
+
+- delete: /api/shoppingcart/{id}

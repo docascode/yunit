@@ -1,0 +1,11 @@
+# Hello YAML Test!
+input: YAML Test!
+output: Hello YAML Test!
+---
+# This is a failed test
+input: YAML Test
+output:
+---
+# [skip] This is a skipped test
+input: Skipped test
+output:
