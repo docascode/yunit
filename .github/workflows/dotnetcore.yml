@@ -1,0 +1,18 @@
+name: Build
+on: [create, push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.0.100
+    - name: Build and Test
+      run: ./build.sh
+    - name: Publish NuGet Package
+      if: |
+        (github.event_name == 'create' && github.event.ref_type == 'tag') ||
+        (github.event_name == 'push' && github.event.ref == 'refs/heads/master')
+      run: dotnet nuget push ./drop/*.nupkg -k {NUGET_KEY}
