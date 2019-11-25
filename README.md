@@ -1,2 +1,3 @@
-# ytest
-Data driven, self explanatory testing tool for .NET using YAML
+# yunit
+
+A data driven testing tool for .NET using markdown and YAML

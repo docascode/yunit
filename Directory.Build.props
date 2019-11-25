@@ -1,6 +1,17 @@
 <Project>
   <PropertyGroup>
+    <!-- NuGet properties -->
+    <Copyright>Copyright (c) Yufei Huang.</Copyright>
+    <Authors>Yufei Huang</Authors>
+    <Company>.NET Foundation</Company>
+    <Product>yunit testing tool</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIconUrl>https://raw.githubusercontent.com/yufeih/yunit/master/docs/media/logo-512-transparent.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/yufeih/yunit</PackageProjectUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Build properties -->
     <LangVersion>Latest</LangVersion>
-    <TreatWarningsAsErrors Condition="'$(Configuration)'=='Release'">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
