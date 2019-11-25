@@ -14,5 +14,7 @@ jobs:
     - name: Publish NuGet Package
       if: |
         (github.event_name == 'create' && github.event.ref_type == 'tag') ||
-        (github.event_name == 'push' && github.event.ref == 'refs/heads/master')
-      run: dotnet nuget push ./drop/*.nupkg -k {NUGET_KEY}
+        (github.event_name == 'push' && github.event.ref == 'refs/heads/preview')
+      run: dotnet nuget push drop/**/*.nupkg --api-key $env:NUGET_KEY --skip-duplicate
+      env:
+        NUGET_KEY: ${{ secrets.NUGET_KEY }}
