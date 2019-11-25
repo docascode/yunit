@@ -90,7 +90,7 @@ output: Hello Markdown Test!
 
 You can further customize how tests are extracted from markdown files in the `[MarkdownTest]` attributes.
 
-## Use `json-diff` for data driven assertion
+## Using `json-diff` for data driven assertion
 
 You can use _any_ assertion library to verify your test expectations.
 
