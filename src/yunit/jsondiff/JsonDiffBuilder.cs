@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace yunit
+namespace Yunit
 {
     public class JsonDiffBuilder
     {

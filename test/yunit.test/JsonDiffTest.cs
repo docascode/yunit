@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace yunit
+namespace Yunit
 {
     public class JsonDiffTest
     {

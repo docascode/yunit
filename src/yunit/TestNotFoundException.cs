@@ -3,7 +3,7 @@
 
 using System;
 
-namespace yunit
+namespace Yunit
 {
     /// <summary>
     /// Marks the current test as not found.

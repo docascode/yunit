@@ -3,7 +3,7 @@
 
 using System;
 
-namespace yunit
+namespace Yunit
 {
     internal interface ITestAttribute
     {

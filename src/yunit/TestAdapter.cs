@@ -17,7 +17,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Newtonsoft.Json;
 
-namespace yunit
+namespace Yunit
 {
 #pragma warning disable CA1812 // avoid uninstantiated internal classes
 

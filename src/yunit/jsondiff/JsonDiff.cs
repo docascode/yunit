@@ -13,7 +13,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace yunit
+namespace Yunit
 {
     /// <summary>
     /// Visualize test validation result by producing a JSON diff.

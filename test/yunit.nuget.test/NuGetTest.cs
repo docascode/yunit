@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace yunit.NuGetTest
+namespace Yunit.NuGetTest
 {
     public class NuGetTest
     {

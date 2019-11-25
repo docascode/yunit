@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace yunit
+namespace Yunit
 {
     /// <summary>
     /// Provides test data coming from markdown fences.

@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace yunit
+namespace Yunit
 {
     /// <summary>
     /// Determines if the expected <see cref="JToken"/> and actual <see cref="JToken"/>

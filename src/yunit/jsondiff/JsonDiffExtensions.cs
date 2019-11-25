@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace yunit
+namespace Yunit
 {
     public static class JsonDiffExtensions
     {

@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 
-namespace yunit
+namespace Yunit
 {
     internal partial class YamlUtility
     {

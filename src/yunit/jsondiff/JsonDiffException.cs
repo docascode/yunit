@@ -3,7 +3,7 @@
 
 using System;
 
-namespace yunit
+namespace Yunit
 {
     public class JsonDiffException : Exception
     {
