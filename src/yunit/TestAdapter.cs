@@ -144,12 +144,6 @@ namespace Yunit
                 result.ErrorMessage = ex.Reason;
                 result.Outcome = TestOutcome.Skipped;
             }
-            catch (TargetInvocationException tie)
-            {
-                result.ErrorMessage = tie.InnerException.Message;
-                result.ErrorStackTrace = tie.InnerException.StackTrace;
-                result.Outcome = TestOutcome.Failed;
-            }
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
@@ -275,9 +269,16 @@ namespace Yunit
                     : YamlUtility.ToJToken(data.Content).ToObject(parameters[i].ParameterType, s_jsonSerializer);
             }
 
-            var result = method.Invoke(instance, args);
+            try
+            {
+                var result = method.Invoke(instance, args);
 
-            return result as Task ?? Task.CompletedTask;
+                return result as Task ?? Task.CompletedTask;
+            }
+            catch (TargetInvocationException tie)
+            {
+                throw tie.InnerException;
+            }
         }
 
         private static (Type type, MethodInfo method) GetMethodInfo(string source, string fullyQualifiedName)
