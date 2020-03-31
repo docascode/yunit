@@ -16,10 +16,10 @@ dotnet new console
 </configuration>
 ```
 
-3. Add NuGet reference to `Microsoft.DocAsTest`
+3. Add NuGet reference to `yunit`
 
 ```cmd
-dotnet add package Microsoft.DocAsTest --version 3.0.0-*
+dotnet add package yunit --version 3.0.0-*
 ```
 
 4. Create test logic

@@ -25,8 +25,8 @@ namespace Yunit
     // for more details on how to write a vstest adapter
     [FileExtension(".dll")]
     [FileExtension(".exe")]
-    [DefaultExecutorUri("executor://docastest")]
-    [ExtensionUri("executor://docastest")]
+    [DefaultExecutorUri("executor://yunit")]
+    [ExtensionUri("executor://yunit")]
     [Category("managed")]
     internal class TestAdapter : ITestDiscoverer, ITestExecutor
     {
@@ -40,10 +40,10 @@ namespace Yunit
                           = new ConcurrentDictionary<(string, string), (Type, MethodInfo)>();
 
         private static readonly TestProperty s_ordinalProperty = TestProperty.Register(
-            "docastest.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
+            "yunit.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
-            "docastest.AttributeIndex", "AttributeIndex", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
+            "yunit.AttributeIndex", "AttributeIndex", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly string[] s_filteringProperties = { "DisplayName", "Summary", "FullyQualifiedName" };
 
@@ -178,7 +178,7 @@ namespace Yunit
                 LocalExtensionData = data,
                 FullyQualifiedName = $"{fullyQualifiedName}({Path.GetFileName(data.FilePath).Replace('.', '-')})",
                 Source = source,
-                ExecutorUri = new Uri("executor://docastest"),
+                ExecutorUri = new Uri("executor://yunit"),
                 Id = CreateGuid($"{attributeIndex}/{data.FilePath}/{data.Ordinal}/{data.Summary}"),
                 DisplayName = $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}",
                 CodeFilePath = data.FilePath,

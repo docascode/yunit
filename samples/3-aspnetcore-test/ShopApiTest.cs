@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AspNetCoreTest;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.DocAsTest;
+using Yunit;
 using Newtonsoft.Json.Linq;
 
 public class ShopApiTest
