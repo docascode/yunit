@@ -1,5 +1,5 @@
 name: Build
-on: [create, push, pull_request]
+on: push
 jobs:
   build:
     runs-on: windows-latest
