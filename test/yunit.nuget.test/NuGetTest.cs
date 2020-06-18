@@ -19,7 +19,7 @@ namespace Yunit.NuGetTest
         }
 
         [MarkdownTest("~/test/yunit.nuget.test/**/*.md")]
-        public async Task SkipAsync(string filename)
+        public async Task SkipAsync(TestData data, string filename)
         {
             await Task.Delay(1);
             throw new TestSkippedException();

@@ -42,6 +42,9 @@ namespace Yunit
         private static readonly TestProperty s_ordinalProperty = TestProperty.Register(
             "yunit.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
+        private static readonly TestProperty s_MetrixProperty = TestProperty.Register(
+            "yunit.Metrix", "Metrix", typeof(string), TestPropertyAttributes.Hidden, typeof(TestCase));
+
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
             "yunit.AttributeIndex", "AttributeIndex", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
@@ -211,6 +214,7 @@ namespace Yunit
             };
 
             result.SetPropertyValue(s_ordinalProperty, data.Ordinal);
+            result.SetPropertyValue(s_MetrixProperty, data.Metrix);
             result.SetPropertyValue(s_attributeIndexProperty, attributeIndex);
 
             return result;
@@ -260,6 +264,7 @@ namespace Yunit
                 // LocalExtensionData is lost when running a selected test from Visual Studio test explorer.
                 var ordinal = test.GetPropertyValue<int?>(s_ordinalProperty, null) ?? throw new TestNotFoundException();
                 var attributeIndex = test.GetPropertyValue<int?>(s_attributeIndexProperty, null) ?? throw new TestNotFoundException();
+                var metrix = test.GetPropertyValue<string>(s_MetrixProperty, null) ?? throw new TestNotFoundException();
                 var attributes = method.GetCustomAttributes(typeof(ITestAttribute), inherit: false);
 
                 if (attributeIndex >= attributes.Length)
@@ -274,6 +279,11 @@ namespace Yunit
                         data = currentData;
                     }
                 });
+
+                if (data != null)
+                {
+                    data.Metrix = metrix;
+                }
             }
 
             if (data is null)
