@@ -24,5 +24,16 @@ namespace Yunit.NuGetTest
             await Task.Delay(1);
             throw new TestSkippedException();
         }
+
+        [MarkdownTest("~/test/yunit.nuget.test/**/*.md", ExpandTest = "ExpandTest")]
+        public void ExpandTestMethod(TestData data, string filename)
+        {
+            throw new TestSkippedException(data.Metrix);
+        }
+
+        public string[] ExpandTest(string filename)
+        {
+            return new [] { "", "metrix 1", "metrix 2" };
+        }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -30,6 +30,11 @@ namespace Yunit
         /// </summary>
         public int MinFenceChar { get; set; } = 6;
 
+        /// <summary>
+        /// Gets or sets the method name to expand the test case.
+        /// </summary>
+        public string ExpandTest { get; set; }
+
         public MarkdownTestAttribute(string glob = null) => Glob = glob;
 
         private enum MarkdownReadState
@@ -40,52 +45,50 @@ namespace Yunit
 
         void ITestAttribute.DiscoverTests(string path, Action<TestData> report)
         {
-            using (var reader = File.OpenText(path))
+            using var reader = File.OpenText(path);
+            var state = MarkdownReadState.Markdown;
+            var indent = 0;
+            var ordinal = 0;
+            var lineNumber = 0;
+            var data = new TestData();
+            var content = new StringBuilder();
+
+            while (true)
             {
-                var state = MarkdownReadState.Markdown;
-                var indent = 0;
-                var ordinal = 0;
-                var lineNumber = 0;
-                var data = new TestData();
-                var content = new StringBuilder();
+                var line = reader.ReadLine();
+                if (line is null)
+                    return;
 
-                while (true)
+                lineNumber++;
+
+                switch (state)
                 {
-                    var line = reader.ReadLine();
-                    if (line is null)
-                        return;
+                    case MarkdownReadState.Markdown when ReadStartFence(line, out indent, out var currentTip):
+                        data.FenceTip = currentTip;
+                        data.LineNumber = lineNumber;
+                        state = MarkdownReadState.Fence;
+                        content.Length = 0;
+                        break;
 
-                    lineNumber++;
+                    case MarkdownReadState.Markdown when !string.IsNullOrWhiteSpace(line):
+                        data.Summary = line;
+                        break;
 
-                    switch (state)
-                    {
-                        case MarkdownReadState.Markdown when ReadStartFence(line, out indent, out var currentTip):
-                            data.FenceTip = currentTip;
-                            data.LineNumber = lineNumber;
-                            state = MarkdownReadState.Fence;
-                            content.Length = 0;
-                            break;
+                    case MarkdownReadState.Fence when ReadEndFence(line, indent):
+                        data.Ordinal = ++ordinal;
+                        data.Content = content.ToString();
+                        data.Summary = data.Summary.Trim(s_summaryTrimChars);
+                        data.FilePath = path;
+                        report(data);
+                        data = new TestData();
+                        state = MarkdownReadState.Markdown;
+                        break;
 
-                        case MarkdownReadState.Markdown when !string.IsNullOrWhiteSpace(line):
-                            data.Summary = line;
-                            break;
-
-                        case MarkdownReadState.Fence when ReadEndFence(line, indent):
-                            data.Ordinal = ++ordinal;
-                            data.Content = content.ToString();
-                            data.Summary = data.Summary.Trim(s_summaryTrimChars);
-                            data.FilePath = path;
-                            report(data);
-                            data = new TestData();
-                            state = MarkdownReadState.Markdown;
-                            break;
-
-                        case MarkdownReadState.Fence:
-                            if (line.Length > indent)
-                                content.Append(line, indent, line.Length - indent);
-                            content.AppendLine();
-                            break;
-                    }
+                    case MarkdownReadState.Fence:
+                        if (line.Length > indent)
+                            content.Append(line, indent, line.Length - indent);
+                        content.AppendLine();
+                        break;
                 }
             }
         }

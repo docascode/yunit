@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Yunit
@@ -34,5 +34,15 @@ namespace Yunit
         /// Gets the content of this data fragment.
         /// <summary>
         public string Content { get; set; }
+
+        /// <summary>
+        /// Gets the expanded metrix name.
+        /// </summary>
+        public string Metrix { get; internal set; }
+
+        internal TestData Clone()
+        {
+            return (TestData)MemberwiseClone();
+        }
     }
 }

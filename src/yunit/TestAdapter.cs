@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -71,16 +71,37 @@ namespace Yunit
                 {
                     foreach (var method in type.GetRuntimeMethods())
                     {
-                        var fullyQualifiedName = $"{type.FullName}.{method.Name}";
                         var attributes = method.GetCustomAttributes(typeof(ITestAttribute), inherit: false);
 
                         for (var i = 0; i < attributes.Length; i++)
                         {
-                            DiscoverTests(
-                                (ITestAttribute)attributes[i],
-                                sourcePath,
-                                data => sendTestCase(CreateTestCase(data, fullyQualifiedName, source, i)),
-                                log);
+                            var attribute = (ITestAttribute)attributes[i];
+                            var (expandMethodType, expandMethod) = string.IsNullOrEmpty(attribute.ExpandTest)
+                                ? default
+                                : GetMethodInfo(source, $"{type.FullName}.{attribute.ExpandTest}");
+
+                            DiscoverTests(attribute, source, ExpandTest, log);
+
+                            void ExpandTest(TestData data)
+                            {
+                                if (expandMethodType is null || expandMethod is null)
+                                {
+                                    sendTestCase(CreateTestCase(data, type, method, source, i));
+                                }
+                                else
+                                {
+                                    var metrices = InvokeMethod(expandMethodType, expandMethod, data) as IEnumerable<string>;
+                                    if (metrices != null)
+                                    {
+                                        foreach (var metrix in metrices)
+                                        {
+                                            var metrixData = data.Clone();
+                                            data.Metrix = metrix;
+                                            sendTestCase(CreateTestCase(data, type, method, source, i));
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -171,16 +192,20 @@ namespace Yunit
             return null;
         }
 
-        private static TestCase CreateTestCase(TestData data, string fullyQualifiedName, string source, int attributeIndex)
+        private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex)
         {
+            var displayName = string.IsNullOrEmpty(data.Metrix)
+                ? $"{method.Name}/{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
+                : $"{method.Name}/{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: [{data.Metrix}] {data.Summary}";
+
             var result = new TestCase
             {
                 LocalExtensionData = data,
-                FullyQualifiedName = $"{fullyQualifiedName}({Path.GetFileName(data.FilePath).Replace('.', '-')})",
+                FullyQualifiedName = $"{type.FullName}.{method.Name}({Path.GetFileName(data.FilePath).Replace('.', '-')})",
                 Source = source,
                 ExecutorUri = new Uri("executor://yunit"),
-                Id = CreateGuid($"{attributeIndex}/{data.FilePath}/{data.Ordinal}/{data.Summary}"),
-                DisplayName = $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}",
+                Id = CreateGuid($"{attributeIndex}/{displayName}"),
+                DisplayName = displayName,
                 CodeFilePath = data.FilePath,
                 LineNumber = data.LineNumber,
             };
@@ -194,14 +219,12 @@ namespace Yunit
         private static Guid CreateGuid(string displayName)
         {
 #pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
-            using (var md5 = SHA1.Create())
+            using var md5 = SHA1.Create();
+            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(displayName));
+            var buffer = new byte[16];
+            Array.Copy(hash, 0, buffer, 0, 16);
+            return new Guid(buffer);
 #pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms
-            {
-                var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(displayName));
-                var buffer = new byte[16];
-                Array.Copy(hash, 0, buffer, 0, 16);
-                return new Guid(buffer);
-            }
         }
 
         private static void DiscoverTests(ITestAttribute attribute, string sourcePath, Action<TestData> report, Action<string> log)
@@ -258,6 +281,11 @@ namespace Yunit
                 throw new TestNotFoundException();
             }
 
+            return InvokeMethod(type, method, data) as Task ?? Task.CompletedTask;
+        }
+
+        private static object InvokeMethod(Type type, MethodInfo method, TestData data)
+        {
             var instance = method.IsStatic ? null : Activator.CreateInstance(type);
             var parameters = method.GetParameters();
             var args = new object[parameters.Length];
@@ -271,9 +299,7 @@ namespace Yunit
 
             try
             {
-                var result = method.Invoke(instance, args);
-
-                return result as Task ?? Task.CompletedTask;
+                return method.Invoke(instance, args);
             }
             catch (TargetInvocationException tie)
             {
