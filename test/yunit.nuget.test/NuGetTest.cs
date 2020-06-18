@@ -28,7 +28,7 @@ namespace Yunit.NuGetTest
         [MarkdownTest("~/test/yunit.nuget.test/**/*.md", ExpandTest = "ExpandTest")]
         public void ExpandTestMethod(TestData data, string filename)
         {
-            throw new TestSkippedException(data.Metrix);
+            throw new TestSkippedException(data.Matrix);
         }
 
         public string[] ExpandTest(string filename)

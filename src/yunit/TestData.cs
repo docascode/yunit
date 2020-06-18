@@ -38,7 +38,7 @@ namespace Yunit
         /// <summary>
         /// Gets the expanded metrix name.
         /// </summary>
-        public string Metrix { get; internal set; }
+        public string Matrix { get; internal set; }
 
         internal TestData Clone()
         {

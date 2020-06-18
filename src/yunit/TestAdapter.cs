@@ -43,7 +43,7 @@ namespace Yunit
             "yunit.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_MetrixProperty = TestProperty.Register(
-            "yunit.Metrix", "Metrix", typeof(string), TestPropertyAttributes.Hidden, typeof(TestCase));
+            "yunit.Matrix", "Matrix", typeof(string), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
             "yunit.AttributeIndex", "AttributeIndex", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
@@ -99,7 +99,7 @@ namespace Yunit
                                         foreach (var metrix in metrices)
                                         {
                                             var metrixData = data.Clone();
-                                            data.Metrix = metrix;
+                                            data.Matrix = metrix;
                                             sendTestCase(CreateTestCase(data, type, method, source, i));
                                         }
                                     }
@@ -197,9 +197,9 @@ namespace Yunit
 
         private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex)
         {
-            var displayName = string.IsNullOrEmpty(data.Metrix)
-                ? $"{method.Name}/{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
-                : $"{method.Name}/{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: [{data.Metrix}] {data.Summary}";
+            var displayName = string.IsNullOrEmpty(data.Matrix)
+                ? $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
+                : $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: [{data.Matrix}] {data.Summary}";
 
             var result = new TestCase
             {
@@ -214,7 +214,7 @@ namespace Yunit
             };
 
             result.SetPropertyValue(s_ordinalProperty, data.Ordinal);
-            result.SetPropertyValue(s_MetrixProperty, data.Metrix);
+            result.SetPropertyValue(s_MetrixProperty, data.Matrix);
             result.SetPropertyValue(s_attributeIndexProperty, attributeIndex);
 
             return result;
@@ -282,7 +282,7 @@ namespace Yunit
 
                 if (data != null)
                 {
-                    data.Metrix = metrix;
+                    data.Matrix = metrix;
                 }
             }
 
