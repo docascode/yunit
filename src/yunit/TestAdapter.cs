@@ -204,7 +204,7 @@ namespace Yunit
             var result = new TestCase
             {
                 LocalExtensionData = data,
-                FullyQualifiedName = $"{type.FullName}.{method.Name}({Path.GetFileName(data.FilePath).Replace('.', '-')})",
+                FullyQualifiedName = $"{type.FullName}.{method.Name}({Path.GetFileName(data.FilePath).Replace('.', '-')}-{data.Ordinal})",
                 Source = source,
                 ExecutorUri = new Uri("executor://yunit"),
                 Id = CreateGuid($"{attributeIndex}/{displayName}"),
