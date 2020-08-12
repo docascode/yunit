@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -313,7 +314,8 @@ namespace Yunit
             }
             catch (TargetInvocationException tie)
             {
-                throw tie.InnerException;
+                ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+                throw;
             }
         }
 
