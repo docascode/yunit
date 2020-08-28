@@ -6,7 +6,6 @@
     <Company>.NET Foundation</Company>
     <Product>yunit testing tool</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://raw.githubusercontent.com/yufeih/yunit/master/docs/media/logo-512-transparent.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/yufeih/yunit</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
