@@ -6,7 +6,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='NuGetTest'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="yunit" Version="1.0.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'!='NuGetTest'">
+    <ProjectReference Include="../../src/yunit/yunit.csproj" />
   </ItemGroup>
 
 </Project>
