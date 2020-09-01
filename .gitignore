@@ -1,3 +1,5 @@
+*.user
+launchSettings.json
 .vs
 .DS_Store
 bin

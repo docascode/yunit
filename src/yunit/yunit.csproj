@@ -7,9 +7,7 @@
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>Latest</LangVersion>
     <NoWarn>NU5048</NoWarn>
-    <TreatWarningsAsErrors Condition="'$(Configuration)'=='Release'">true</TreatWarningsAsErrors>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>

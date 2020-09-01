@@ -1,11 +1,15 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace Yunit.NuGetTest
 {
     public class NuGetTest
     {
+        internal static void Main()
+        {
+            // Blazor build requires an entry point method
+        }
+
         [MarkdownTest("~/test/yunit.nuget.test/**/*.md")]
         public void Foo(string filename)
         {

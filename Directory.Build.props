@@ -11,6 +11,6 @@
 
     <!-- Build properties -->
     <LangVersion>Latest</LangVersion>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(Configuration)'=='Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
