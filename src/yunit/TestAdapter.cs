@@ -43,7 +43,7 @@ namespace Yunit
         private static readonly TestProperty s_ordinalProperty = TestProperty.Register(
             "yunit.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
-        private static readonly TestProperty s_MetrixProperty = TestProperty.Register(
+        private static readonly TestProperty s_MatrixProperty = TestProperty.Register(
             "yunit.Matrix", "Matrix", typeof(string), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
@@ -215,7 +215,7 @@ namespace Yunit
             };
 
             result.SetPropertyValue(s_ordinalProperty, data.Ordinal);
-            result.SetPropertyValue(s_MetrixProperty, data.Matrix);
+            result.SetPropertyValue(s_MatrixProperty, data.Matrix);
             result.SetPropertyValue(s_attributeIndexProperty, attributeIndex);
 
             return result;
@@ -263,14 +263,14 @@ namespace Yunit
             if (data is null)
             {
                 // LocalExtensionData is lost when running a selected test from Visual Studio test explorer.
-                var ordinal = test.GetPropertyValue<int?>(s_ordinalProperty, null) ?? throw new TestNotFoundException();
-                var attributeIndex = test.GetPropertyValue<int?>(s_attributeIndexProperty, null) ?? throw new TestNotFoundException();
-                var metrix = test.GetPropertyValue<string>(s_MetrixProperty, null) ?? throw new TestNotFoundException();
+                var ordinal = test.GetPropertyValue<int?>(s_ordinalProperty, null) ?? throw new TestNotFoundException(s_ordinalProperty.ToString());
+                var attributeIndex = test.GetPropertyValue<int?>(s_attributeIndexProperty, null) ?? throw new TestNotFoundException(s_attributeIndexProperty.ToString());
+                var metrix = test.GetPropertyValue<string>(s_MatrixProperty, null) ?? throw new TestNotFoundException(s_MatrixProperty.ToString());
                 var attributes = method.GetCustomAttributes(typeof(ITestAttribute), inherit: false);
 
                 if (attributeIndex >= attributes.Length)
                 {
-                    throw new TestNotFoundException();
+                    throw new TestNotFoundException("attributeIndex >= attributes.Length");
                 }
 
                 ((ITestAttribute)attributes[attributeIndex]).DiscoverTests(test.CodeFilePath, currentData =>
