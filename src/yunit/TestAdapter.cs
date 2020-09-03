@@ -94,13 +94,13 @@ namespace Yunit
                                 }
                                 else
                                 {
-                                    var metrices = InvokeMethod(expandMethodType, expandMethod, data) as IEnumerable<string>;
-                                    if (metrices != null)
+                                    var matrices = InvokeMethod(expandMethodType, expandMethod, data) as IEnumerable<string>;
+                                    if (matrices != null)
                                     {
-                                        foreach (var metrix in metrices)
+                                        foreach (var matrix in matrices)
                                         {
-                                            var metrixData = data.Clone();
-                                            data.Matrix = metrix;
+                                            var matrixData = data.Clone();
+                                            data.Matrix = matrix;
                                             sendTestCase(CreateTestCase(data, type, method, source, i));
                                         }
                                     }
@@ -265,7 +265,6 @@ namespace Yunit
                 // LocalExtensionData is lost when running a selected test from Visual Studio test explorer.
                 var ordinal = test.GetPropertyValue<int?>(s_ordinalProperty, null) ?? throw new TestNotFoundException(s_ordinalProperty.ToString());
                 var attributeIndex = test.GetPropertyValue<int?>(s_attributeIndexProperty, null) ?? throw new TestNotFoundException(s_attributeIndexProperty.ToString());
-                var metrix = test.GetPropertyValue<string>(s_MatrixProperty, null) ?? throw new TestNotFoundException(s_MatrixProperty.ToString());
                 var attributes = method.GetCustomAttributes(typeof(ITestAttribute), inherit: false);
 
                 if (attributeIndex >= attributes.Length)
@@ -283,7 +282,7 @@ namespace Yunit
 
                 if (data != null)
                 {
-                    data.Matrix = metrix;
+                    data.Matrix = test.GetPropertyValue<string>(s_MatrixProperty, null);
                 }
             }
 
