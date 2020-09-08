@@ -202,10 +202,12 @@ namespace Yunit
                 ? $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
                 : $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: [{data.Matrix}] {data.Summary}";
 
+            var displayNameHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(displayName));
+
             var result = new TestCase
             {
                 LocalExtensionData = data,
-                FullyQualifiedName = $"{type.FullName}.{method.Name}({Path.GetFileName(data.FilePath).Replace('.', '-')}-{data.Ordinal})",
+                FullyQualifiedName = $"{type.FullName}.{method.Name}(displayNameHash)",
                 Source = source,
                 ExecutorUri = new Uri("executor://yunit"),
                 Id = CreateGuid($"{attributeIndex}/{displayName}"),
