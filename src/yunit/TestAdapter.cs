@@ -207,7 +207,7 @@ namespace Yunit
             var result = new TestCase
             {
                 LocalExtensionData = data,
-                FullyQualifiedName = $"{type.FullName}.{method.Name}(displayNameHash)",
+                FullyQualifiedName = $"{type.FullName}.{method.Name}({displayNameHash})",
                 Source = source,
                 ExecutorUri = new Uri("executor://yunit"),
                 Id = CreateGuid($"{attributeIndex}/{displayName}"),
