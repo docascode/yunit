@@ -17,11 +17,10 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Yunit
 {
-#pragma warning disable CA1812 // avoid uninstantiated internal classes
-
     // See https://github.com/microsoft/vstest-docs/blob/master/RFCs/0004-Adapter-Extensibility.md
     // for more details on how to write a vstest adapter
     [FileExtension(".dll")]
@@ -43,7 +42,7 @@ namespace Yunit
         private static readonly TestProperty s_ordinalProperty = TestProperty.Register(
             "yunit.Ordinal", "Ordinal", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
-        private static readonly TestProperty s_MatrixProperty = TestProperty.Register(
+        private static readonly TestProperty s_matrixProperty = TestProperty.Register(
             "yunit.Matrix", "Matrix", typeof(string), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
@@ -97,10 +96,22 @@ namespace Yunit
                                     var matrices = InvokeMethod(expandMethodType, expandMethod, data) as IEnumerable<string>;
                                     if (matrices != null)
                                     {
+                                        var first = true;
                                         foreach (var matrix in matrices)
                                         {
                                             var matrixData = data.Clone();
                                             data.Matrix = matrix;
+
+                                            // Only update source for the first matrix
+                                            if (first)
+                                            {
+                                                first = false;
+                                            }
+                                            else
+                                            {
+                                                data.UpdateSource = false;
+                                            }
+
                                             sendTestCase(CreateTestCase(data, type, method, source, i));
                                         }
                                     }
@@ -114,9 +125,11 @@ namespace Yunit
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
-            var testRuns = new ConcurrentBag<Task>();
+            var testRuns = new ConcurrentBag<Task<TestRunResult>>();
             Parallel.ForEach(tests, test => testRuns.Add(RunTest(frameworkHandle, test)));
-            Task.WhenAll(testRuns).GetAwaiter().GetResult();
+
+            var testResults = Task.WhenAll(testRuns).GetAwaiter().GetResult();
+            UpdateSource(testResults);
         }
 
         public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
@@ -139,11 +152,11 @@ namespace Yunit
             Task.WhenAll(testRuns).GetAwaiter().GetResult();
         }
 
-        private async Task RunTest(ITestExecutionRecorder log, TestCase test)
+        private async Task<TestRunResult> RunTest(ITestExecutionRecorder log, TestCase test)
         {
             if (_canceled)
             {
-                return;
+                return default;
             }
 
             var result = new TestResult(test);
@@ -156,24 +169,27 @@ namespace Yunit
                 }
                 result.StartTime = DateTime.UtcNow;
 
-                await RunTest(test);
-
+                var returnValue = await RunTest(test);
                 result.Outcome = TestOutcome.Passed;
+                return returnValue;
             }
             catch (TestNotFoundException)
             {
                 result.Outcome = TestOutcome.NotFound;
+                return default;
             }
             catch (TestSkippedException ex)
             {
                 result.ErrorMessage = ex.Reason;
                 result.Outcome = TestOutcome.Skipped;
+                return default;
             }
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
                 result.ErrorStackTrace = ex.StackTrace;
                 result.Outcome = TestOutcome.Failed;
+                return default;
             }
             finally
             {
@@ -217,7 +233,7 @@ namespace Yunit
             };
 
             result.SetPropertyValue(s_ordinalProperty, data.Ordinal);
-            result.SetPropertyValue(s_MatrixProperty, data.Matrix);
+            result.SetPropertyValue(s_matrixProperty, data.Matrix);
             result.SetPropertyValue(s_attributeIndexProperty, attributeIndex);
 
             return result;
@@ -225,13 +241,11 @@ namespace Yunit
 
         private static Guid CreateGuid(string displayName)
         {
-#pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
             using var md5 = SHA1.Create();
             var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(displayName));
             var buffer = new byte[16];
             Array.Copy(hash, 0, buffer, 0, 16);
             return new Guid(buffer);
-#pragma warning restore CA5350 // Do Not Use Weak Cryptographic Algorithms
         }
 
         private static void DiscoverTests(ITestAttribute attribute, string sourcePath, Action<TestData> report, Action<string> log)
@@ -252,7 +266,7 @@ namespace Yunit
             Parallel.ForEach(files, file => attribute.DiscoverTests(Path.Combine(sourcePath, file), report));
         }
 
-        private Task RunTest(TestCase test)
+        private async Task<TestRunResult> RunTest(TestCase test)
         {
             if (test.DisplayName.IndexOf("[skip]", 0, StringComparison.OrdinalIgnoreCase) >= 0)
             {
@@ -284,7 +298,7 @@ namespace Yunit
 
                 if (data != null)
                 {
-                    data.Matrix = test.GetPropertyValue<string>(s_MatrixProperty, null);
+                    data.Matrix = test.GetPropertyValue<string>(s_matrixProperty, null);
                 }
             }
 
@@ -293,7 +307,28 @@ namespace Yunit
                 throw new TestNotFoundException();
             }
 
-            return InvokeMethod(type, method, data) as Task ?? Task.CompletedTask;
+            var result = InvokeMethod(type, method, data);
+            if (result is Task task)
+            {
+                await task;
+            }
+
+            if (!data.UpdateSource)
+            {
+                return default;
+            }
+
+            if (result is Task)
+            {
+                result = GetTaskResult(result);
+            }
+
+            if (result is null)
+            {
+                return default;
+            }
+
+            return GetUpdatedSource(data, result);
         }
 
         private static object InvokeMethod(Type type, MethodInfo method, TestData data)
@@ -366,6 +401,65 @@ namespace Yunit
             }
 
             return string.IsNullOrEmpty(repo) ? null : repo;
+        }
+
+        private static object GetTaskResult(object task)
+        {
+            var type = task.GetType();
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                return type.GetProperty("Result").GetValue(task);
+            }
+            return null;
+        }
+
+        private TestRunResult GetUpdatedSource(TestData data, object result)
+        {
+            return new TestRunResult
+            {
+                FilePath = data.FilePath,
+                Lines = YamlUtility.ToString(JToken.FromObject(result)).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries),
+                ContentStartLine = data.ContentStartLine,
+                LineCount = data.Content.Count(ch => ch == '\n'),
+            };
+        }
+
+        private static void UpdateSource(TestRunResult[] testResults)
+        {
+            Parallel.ForEach(testResults.GroupBy(item => item.FilePath), g => UpdateSource(g.Key, g));
+        }
+
+        private static void UpdateSource(string filePath, IEnumerable<TestRunResult> testRunResults)
+        {
+            var testIndex = 0;
+            var lines = File.ReadLines(filePath).ToArray();
+            var result = new List<string>(lines.Length);
+            var orderedTestRuns = testRunResults.OrderBy(test => test.ContentStartLine).ToArray();
+            var test = orderedTestRuns[testIndex];
+
+            for (var i = 0; i < lines.Length;)
+            {
+                if (test != null && i == test.ContentStartLine - 1)
+                {
+                    result.AddRange(test.Lines);
+                    i += test.LineCount;
+                    testIndex++;
+                    if (testIndex >= orderedTestRuns.Length)
+                    {
+                        test = null;
+                    }
+                    else
+                    {
+                        test = orderedTestRuns[testIndex];
+                    }
+                }
+                else
+                {
+                    result.Add(lines[i++]);
+                }
+            }
+
+            File.WriteAllLines(filePath, result);
         }
     }
 }

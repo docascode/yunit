@@ -25,6 +25,11 @@ namespace Yunit
         /// </summary>
         public string ExpandTest { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the source YAML fragment should be updated if a test returns an object.
+        /// </summary>
+        public bool UpdateSource { get; set; }
+
         public YamlTestAttribute(string glob = null) => Glob = glob;
 
         void ITestAttribute.DiscoverTests(string path, Action<TestData> report)
@@ -48,6 +53,7 @@ namespace Yunit
                         data.Ordinal = ++ordinal;
                         data.Content = content.ToString();
                         data.FilePath = path;
+                        data.UpdateSource = UpdateSource;
 
                         report(data);
 
@@ -62,13 +68,22 @@ namespace Yunit
                 }
                 else
                 {
-                    if (line.StartsWith("#") && data.Summary is null)
+                    if (line.StartsWith("#"))
                     {
-                        data.Summary = line.Trim(s_summaryTrimChars);
+                        if (data.Summary is null)
+                        {
+                            data.Summary = line.Trim(s_summaryTrimChars);
+                        }
                     }
-
-                    content.Append(line);
-                    content.AppendLine();
+                    else
+                    {
+                        if (content.Length == 0)
+                        {
+                            data.ContentStartLine = lineNumber;
+                        }
+                        content.Append(line);
+                        content.AppendLine();
+                    }
                 }
             }
         }
