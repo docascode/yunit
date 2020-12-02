@@ -85,7 +85,7 @@ namespace Yunit
             switch (token)
             {
                 case JValue value:
-                    emitter.Emit(new Scalar(value.ToString()));
+                    emitter.Emit(new Scalar(ScalarToString(value)));
                     break;
 
                 case JArray arr:
@@ -155,6 +155,19 @@ namespace Yunit
                 return new JValue(double.NegativeInfinity);
             }
             return new JValue(value);
+        }
+
+        private static string ScalarToString(JValue value)
+        {
+            return value.Value switch
+            {
+                null => "null",
+                bool b => b ? "true" : "false",
+                double d when double.IsNaN(d) => ".nan",
+                double d when double.IsPositiveInfinity(d) => ".inf",
+                double d when double.IsNegativeInfinity(d) => "-.inf",
+                _ => value.ToString(),
+            };
         }
     }
 }

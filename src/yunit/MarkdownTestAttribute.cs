@@ -91,9 +91,18 @@ namespace Yunit
                         break;
 
                     case MarkdownReadState.Fence:
-                        if (line.Length > indent)
-                            content.Append(line, indent, line.Length - indent);
-                        content.AppendLine();
+                        if (!line.StartsWith("#"))
+                        {
+                            if (content.Length == 0)
+                            {
+                                data.ContentStartLine = lineNumber;
+                            }
+                            if (line.Length > indent)
+                            {
+                                content.Append(line, indent, line.Length - indent);
+                            }
+                            content.AppendLine();
+                        }
                         break;
                 }
             }

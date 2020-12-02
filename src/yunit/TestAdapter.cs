@@ -419,7 +419,7 @@ namespace Yunit
             {
                 FilePath = data.FilePath,
                 Lines = YamlUtility.ToString(JToken.FromObject(result)).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries),
-                StartLine = data.LineNumber - 1,
+                ContentStartLine = data.ContentStartLine,
                 LineCount = data.Content.Count(ch => ch == '\n'),
             };
         }
@@ -434,12 +434,12 @@ namespace Yunit
             var testIndex = 0;
             var lines = File.ReadLines(filePath).ToArray();
             var result = new List<string>(lines.Length);
-            var orderedTestRuns = testRunResults.OrderBy(test => test.StartLine).ToArray();
+            var orderedTestRuns = testRunResults.OrderBy(test => test.ContentStartLine).ToArray();
             var test = orderedTestRuns[testIndex];
 
             for (var i = 0; i < lines.Length;)
             {
-                if (test != null && i == test.StartLine)
+                if (test != null && i == test.ContentStartLine - 1)
                 {
                     result.AddRange(test.Lines);
                     i += test.LineCount;

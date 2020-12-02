@@ -36,6 +36,11 @@ namespace Yunit
         public string Content { get; internal set; }
 
         /// <summary>
+        /// Gets the one based start line in the declaring file.
+        /// <summary>
+        public int ContentStartLine { get; internal set; }
+
+        /// <summary>
         /// Gets the expanded metrix name.
         /// </summary>
         public string Matrix { get; internal set; }

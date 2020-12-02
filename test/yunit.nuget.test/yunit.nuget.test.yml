@@ -7,8 +7,8 @@ value:
 ---
 # this is another formatted YAML test case
 # with multiple lines
-str: "string with ' quote"
+str: '> string needs quote'
 bool: false
 null-value: null
-float: 1.0
+float: 3.1415926
 int: -1

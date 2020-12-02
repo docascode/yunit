@@ -9,7 +9,7 @@ namespace Yunit
 
         public string[] Lines;
 
-        public int StartLine;
+        public int ContentStartLine;
 
         public int LineCount;
     }

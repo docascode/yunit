@@ -68,13 +68,22 @@ namespace Yunit
                 }
                 else
                 {
-                    if (line.StartsWith("#") && data.Summary is null)
+                    if (line.StartsWith("#"))
                     {
-                        data.Summary = line.Trim(s_summaryTrimChars);
+                        if (data.Summary is null)
+                        {
+                            data.Summary = line.Trim(s_summaryTrimChars);
+                        }
                     }
-
-                    content.Append(line);
-                    content.AppendLine();
+                    else
+                    {
+                        if (content.Length == 0)
+                        {
+                            data.ContentStartLine = lineNumber;
+                        }
+                        content.Append(line);
+                        content.AppendLine();
+                    }
                 }
             }
         }
