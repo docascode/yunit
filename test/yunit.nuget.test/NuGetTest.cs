@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace Yunit.NuGetTest
 {
@@ -34,6 +34,12 @@ namespace Yunit.NuGetTest
         public string[] ExpandTest(string filename)
         {
             return new [] { "", "metrix 1", "metrix 2" };
+        }
+
+        [YamlTest("~/test/yunit.nuget.test/**/*.yml", UpdateSource = true)]
+        public Task<JToken> TestUpdateSource(JToken input)
+        {
+            return Task.FromResult(input);
         }
     }
 }

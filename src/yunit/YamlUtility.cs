@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Newtonsoft.Json.Linq;
 
 using YamlDotNet.Core;
@@ -13,71 +14,98 @@ namespace Yunit
 {
     internal partial class YamlUtility
     {
-        internal static JToken ToJToken(
-            string input, Action<Scalar> onKeyDuplicate = null, Func<JToken, ParsingEvent, JToken> onConvert = null)
-        {
-            return ToJToken(new StringReader(input), onKeyDuplicate, onConvert);
-        }
-
-        internal static JToken ToJToken(
-            TextReader input, Action<Scalar> onKeyDuplicate = null, Func<JToken, ParsingEvent, JToken> onConvert = null)
+        public static JToken ToJToken(string input)
         {
             JToken result = null;
 
-            onKeyDuplicate ??= (_ => { });
-            onConvert ??= ((token, _) => token);
-
-            var parser = new Parser(input);
+            var parser = new Parser(new StringReader(input));
             parser.Consume<StreamStart>();
             if (!parser.TryConsume<StreamEnd>(out var _))
             {
                 parser.Consume<DocumentStart>();
-                result = ToJToken(parser, onKeyDuplicate, onConvert);
+                result = ToJToken(parser);
                 parser.Consume<DocumentEnd>();
             }
 
             return result;
         }
 
-        private static JToken ToJToken(
-            IParser parser, Action<Scalar> onKeyDuplicate, Func<JToken, ParsingEvent, JToken> onConvert)
+        private static JToken ToJToken(IParser parser)
         {
             switch (parser.Consume<NodeEvent>())
             {
                 case Scalar scalar:
                     if (scalar.Style == ScalarStyle.Plain)
                     {
-                        return onConvert(ParseScalar(scalar.Value), scalar);
+                        return ParseScalar(scalar.Value);
                     }
-                    return onConvert(new JValue(scalar.Value), scalar);
+                    return new JValue(scalar.Value);
 
                 case SequenceStart seq:
                     var array = new JArray();
                     while (!parser.TryConsume<SequenceEnd>(out var _))
                     {
-                        array.Add(ToJToken(parser, onKeyDuplicate, onConvert));
+                        array.Add(ToJToken(parser));
                     }
-                    return onConvert(array, seq);
+                    return array;
 
                 case MappingStart map:
                     var obj = new JObject();
                     while (!parser.TryConsume<MappingEnd>(out var _))
                     {
                         var key = parser.Consume<Scalar>();
-                        var value = ToJToken(parser, onKeyDuplicate, onConvert);
-
-                        if (obj.ContainsKey(key.Value))
-                        {
-                            onKeyDuplicate(key);
-                        }
+                        var value = ToJToken(parser);
 
                         obj[key.Value] = value;
-                        onConvert(obj.Property(key.Value), key);
+                        obj.Property(key.Value);
                     }
-                    return onConvert(obj, map);
+                    return obj;
 
                 default:
                     throw new NotSupportedException($"Yaml node '{parser.Current.GetType().Name}' is not supported");
+            }
+        }
+
+        public static string ToString(JToken token)
+        {
+            var result = new StringBuilder();
+            var emitter = new Emitter(new StringWriter(result));
+
+            emitter.Emit(new StreamStart());
+            emitter.Emit(new DocumentStart());
+            ToString(token, emitter);
+            emitter.Emit(new DocumentEnd(isImplicit: true));
+            emitter.Emit(new StreamEnd());
+
+            return result.ToString();
+        }
+
+        private static void ToString(JToken token, Emitter emitter)
+        {
+            switch (token)
+            {
+                case JValue value:
+                    emitter.Emit(new Scalar(value.ToString()));
+                    break;
+
+                case JArray arr:
+                    emitter.Emit(new SequenceStart(default, default, default, default));
+                    foreach (var item in arr)
+                    {
+                        ToString(item, emitter);
+                    }
+                    emitter.Emit(new SequenceEnd());
+                    break;
+
+                case JObject obj:
+                    emitter.Emit(new MappingStart());
+                    foreach (var item in obj)
+                    {
+                        ToString(item.Key, emitter);
+                        ToString(item.Value, emitter);
+                    }
+                    emitter.Emit(new MappingEnd());
+                    break;
             }
         }
 

@@ -35,6 +35,11 @@ namespace Yunit
         /// </summary>
         public string ExpandTest { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the source YAML fragment should be updated if a test returns an object.
+        /// </summary>
+        public bool UpdateSource { get; set; }
+
         public MarkdownTestAttribute(string glob = null) => Glob = glob;
 
         private enum MarkdownReadState
@@ -79,6 +84,7 @@ namespace Yunit
                         data.Content = content.ToString();
                         data.Summary = data.Summary.Trim(s_summaryTrimChars);
                         data.FilePath = path;
+                        data.UpdateSource = UpdateSource;
                         report(data);
                         data = new TestData();
                         state = MarkdownReadState.Markdown;

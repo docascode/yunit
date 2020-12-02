@@ -1,0 +1,14 @@
+---
+# this is a formatted YAML test case
+name: my-name
+value:
+- 1
+- string
+---
+# this is another formatted YAML test case
+# with multiple lines
+str: "string with ' quote"
+bool: false
+null-value: null
+float: 1.0
+int: -1
