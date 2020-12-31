@@ -84,7 +84,7 @@ namespace Yunit
                                 ? default
                                 : GetMethodInfo(source, $"{type.FullName}.{attribute.ExpandTest}");
 
-                            DiscoverTests(attribute, source, ExpandTest, log);
+                            DiscoverTests(attribute, sourcePath, ExpandTest, log);
 
                             void ExpandTest(TestData data)
                             {
