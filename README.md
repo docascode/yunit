@@ -40,7 +40,7 @@ public class HelloTestSpec
 - Add `[YamlTest]` attribute to include test cases written in [YAML format](#writing-yaml-tests)
 - Add `[MarkdownTest]` attribute to include test cases written in [markdown format](#writing-markdown-tests)
 
-> 💡 The glob pattern is relative to the current working directory, which could very based on current build configuration and target platform. Use `~/` to denote path relative to the current git repository.
+> 💡 The glob pattern is relative to the current working directory, which could vary based on current build configuration and target platform. Use `~/` to denote path relative to the current git repository.
 
 ```csharp
 public class HelloTest
