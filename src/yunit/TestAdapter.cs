@@ -49,6 +49,9 @@ namespace Yunit
         private static readonly TestProperty s_attributeIndexProperty = TestProperty.Register(
             "yunit.AttributeIndex", "AttributeIndex", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
+        private static readonly TestProperty s_timeoutProperty = TestProperty.Register(
+            "yunit.Timeout", "Timeout", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
+
         private static readonly string[] s_filteringProperties = { "DisplayName", "Summary", "FullyQualifiedName" };
 
         private volatile bool _canceled = false;
@@ -90,7 +93,7 @@ namespace Yunit
                             {
                                 if (expandMethodType is null || expandMethod is null)
                                 {
-                                    sendTestCase(CreateTestCase(data, type, method, source, i));
+                                    sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout));
                                 }
                                 else
                                 {
@@ -101,7 +104,7 @@ namespace Yunit
                                         {
                                             var matrixData = data.Clone();
                                             data.Matrix = matrix;
-                                            sendTestCase(CreateTestCase(data, type, method, source, i));
+                                            sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout));
                                         }
                                     }
                                 }
@@ -150,15 +153,26 @@ namespace Yunit
 
             try
             {
+                await Task.Yield();
+
                 lock (s_lock)
                 {
                     log.RecordStart(test);
                 }
                 result.StartTime = DateTime.UtcNow;
 
-                await RunTest(test);
+                var timeout = test.GetPropertyValue<int>(s_timeoutProperty, 1000);
+                var runTest = RunTest(test);
 
-                result.Outcome = TestOutcome.Passed;
+                if (await Task.WhenAny(runTest, Task.Delay(timeout)) == runTest)
+                {
+                    result.Outcome = TestOutcome.Passed;
+                }
+                else
+                {
+                    result.ErrorMessage = $"Test timeout: {test.DisplayName}";
+                    result.Outcome = TestOutcome.Failed;
+                }
             }
             catch (TestNotFoundException)
             {
@@ -196,7 +210,7 @@ namespace Yunit
             return null;
         }
 
-        private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex)
+        private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex, int timeout)
         {
             var displayName = string.IsNullOrEmpty(data.Matrix)
                 ? $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
@@ -219,6 +233,7 @@ namespace Yunit
             result.SetPropertyValue(s_ordinalProperty, data.Ordinal);
             result.SetPropertyValue(s_MatrixProperty, data.Matrix);
             result.SetPropertyValue(s_attributeIndexProperty, attributeIndex);
+            result.SetPropertyValue(s_timeoutProperty, timeout);
 
             return result;
         }
@@ -260,6 +275,10 @@ namespace Yunit
             }
 
             var (type, method) = GetMethodInfo(test.Source, test.FullyQualifiedName);
+            if (type is null || method is null)
+            {
+                throw new TestNotFoundException();
+            }
 
             var data = test.LocalExtensionData as TestData;
             if (data is null)

@@ -11,6 +11,8 @@ namespace Yunit
 
         string ExpandTest { get; }
 
+        int Timeout { get; }
+
         void DiscoverTests(string path, Action<TestData> report);
     }
 }

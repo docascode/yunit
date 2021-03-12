@@ -35,6 +35,11 @@ namespace Yunit
         /// </summary>
         public string ExpandTest { get; set; }
 
+        /// <summary>
+        /// Gets or sets the timeout of the test case in milliseconds.
+        /// </summary>
+        public int Timeout { get; set; } = 60000;
+
         public MarkdownTestAttribute(string glob = null) => Glob = glob;
 
         private enum MarkdownReadState
