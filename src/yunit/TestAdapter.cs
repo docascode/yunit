@@ -166,6 +166,7 @@ namespace Yunit
 
                 if (await Task.WhenAny(runTest, Task.Delay(timeout)) == runTest)
                 {
+                    await runTest;
                     result.Outcome = TestOutcome.Passed;
                 }
                 else
