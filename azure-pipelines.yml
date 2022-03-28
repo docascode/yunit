@@ -22,7 +22,7 @@ jobs:
       packageType: sdk
       version: 2.1.x # for ESRPCodeSigning
 
-  - script: dotnet test -c Release
+  - powershell: build.ps1
     displayName: dotnet test
 
   - powershell: |
