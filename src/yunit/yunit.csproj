@@ -3,17 +3,24 @@
   <PropertyGroup>
     <PackageId>yunit</PackageId>
     <AssemblyName>yunit.testadapter</AssemblyName>
-    <Description>A data driven testing tool for .NET using markdown and YAML.</Description>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <NoWarn>NU5048</NoWarn>
     <TreatWarningsAsErrors Condition="'$(Configuration)'=='Release'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Description>A data driven testing tool for .NET using markdown and YAML.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/docascode/yunit</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources> 
   </PropertyGroup>
 
   <ItemGroup>
