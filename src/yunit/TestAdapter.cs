@@ -118,13 +118,14 @@ namespace Yunit
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
             var testRuns = new ConcurrentBag<Task>();
-            Parallel.ForEach(tests, test => testRuns.Add(RunTest(frameworkHandle, test)));
+            var inOnlyMode = tests.Any(test => test.DisplayName.IndexOf("[only]", 0, StringComparison.OrdinalIgnoreCase) >= 0);
+            Parallel.ForEach(tests, test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
             Task.WhenAll(testRuns).GetAwaiter().GetResult();
         }
 
         public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
-            var testRuns = new ConcurrentBag<Task>();
+            var tests = new ConcurrentBag<TestCase>();
 
             var filterExpression = runContext.GetTestCaseFilter(s_filteringProperties, null);
 
@@ -134,15 +135,15 @@ namespace Yunit
                 {
                     if (filterExpression == null || filterExpression.MatchTestCase(test, name => GetPropertyValue(test, name)))
                     {
-                        testRuns.Add(RunTest(frameworkHandle, test));
+                        tests.Add(test);
                     }
                 },
                 message => frameworkHandle.SendMessage(TestMessageLevel.Warning, message));
 
-            Task.WhenAll(testRuns).GetAwaiter().GetResult();
+            RunTests(tests, runContext, frameworkHandle);
         }
 
-        private async Task RunTest(ITestExecutionRecorder log, TestCase test)
+        private async Task RunTest(ITestExecutionRecorder log, TestCase test, bool inOnlyMode = false)
         {
             if (_canceled)
             {
@@ -162,7 +163,7 @@ namespace Yunit
                 result.StartTime = DateTime.UtcNow;
 
                 var timeout = test.GetPropertyValue<int>(s_timeoutProperty, 1000);
-                var runTest = RunTest(test);
+                var runTest = RunTest(test, inOnlyMode);
 
                 if (await Task.WhenAny(runTest, Task.Delay(timeout)) == runTest)
                 {
@@ -268,11 +269,16 @@ namespace Yunit
             Parallel.ForEach(files, file => attribute.DiscoverTests(Path.Combine(sourcePath, file), report));
         }
 
-        private Task RunTest(TestCase test)
+        private Task RunTest(TestCase test, bool inOnlyMode = false)
         {
             if (test.DisplayName.IndexOf("[skip]", 0, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 throw new TestSkippedException("Marked as [skip]");
+            }
+
+            if (inOnlyMode && test.DisplayName.IndexOf("[only]", 0, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                throw new TestSkippedException("Some other tests has been marked as [only]");
             }
 
             var (type, method) = GetMethodInfo(test.Source, test.FullyQualifiedName);
