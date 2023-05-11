@@ -219,14 +219,15 @@ namespace Yunit
                 : $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: [{data.Matrix}] {data.Summary}";
 
             var displayNameHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(displayName));
+            var fullyQualifiedName = $"{type.FullName}.{method.Name}({attributeIndex},{displayNameHash})";
 
             var result = new TestCase
             {
                 LocalExtensionData = data,
-                FullyQualifiedName = $"{type.FullName}.{method.Name}({displayNameHash})",
+                FullyQualifiedName = fullyQualifiedName,
                 Source = source,
                 ExecutorUri = new Uri("executor://yunit"),
-                Id = CreateGuid($"{attributeIndex}/{displayName}"),
+                Id = CreateGuid(fullyQualifiedName),
                 DisplayName = displayName,
                 CodeFilePath = data.FilePath,
                 LineNumber = data.LineNumber,
