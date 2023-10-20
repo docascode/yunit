@@ -33,7 +33,7 @@ namespace Yunit
         /// <summary>
         /// Gets or sets the parallel level of the test case.
         /// </summary>
-        public ParallelLevel ParallelLevel { get; set; } = ParallelLevel.All;
+        public ParallelMode ParallelLevel { get; set; } = ParallelMode.Parallel;
 
         public YamlTestAttribute(string glob = null) => Glob = glob;
 

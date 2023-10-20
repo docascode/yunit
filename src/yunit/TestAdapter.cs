@@ -53,7 +53,7 @@ namespace Yunit
             "yunit.Timeout", "Timeout", typeof(int), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly TestProperty s_parallelLevelProperty = TestProperty.Register(
-            "yunit.ParallelLevel", "ParallelLevel", typeof(ParallelLevel), TestPropertyAttributes.Hidden, typeof(TestCase));
+            "yunit.ParallelLevel", "ParallelLevel", typeof(ParallelMode), TestPropertyAttributes.Hidden, typeof(TestCase));
 
         private static readonly string[] s_filteringProperties = { "DisplayName", "Summary", "FullyQualifiedName" };
 
@@ -123,20 +123,20 @@ namespace Yunit
             
             var inOnlyMode = tests.Any(test => test.DisplayName.IndexOf("[only]", 0, StringComparison.OrdinalIgnoreCase) >= 0);
 
-            var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelLevel>(s_parallelLevelProperty, ParallelLevel.All)).ToArray();
+            var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelMode>(s_parallelLevelProperty, ParallelMode.Parallel)).ToArray();
 
-            var allParallelTests = groupTests.Where(group => group.Key == ParallelLevel.All).SelectMany(group => group);
-            if (allParallelTests.Any())
+            var parallelTests = groupTests.Where(group => group.Key == ParallelMode.Parallel).SelectMany(group => group);
+            if (parallelTests.Any())
             {
                 var testRuns = new ConcurrentBag<Task>();
-                Parallel.ForEach(allParallelTests, test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
+                Parallel.ForEach(parallelTests, test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
                 Task.WhenAll(testRuns).GetAwaiter().GetResult();
             }
 
-            var fileParallelTests = groupTests.Where(group => group.Key == ParallelLevel.File).SelectMany(group => group);
-            if (fileParallelTests.Any())
+            var fileSequentialTestsParallelTests = groupTests.Where(group => group.Key == ParallelMode.FileSequentialTestsParallel).SelectMany(group => group);
+            if (fileSequentialTestsParallelTests.Any())
             {
-                foreach (var fileTests in fileParallelTests.GroupBy(test => test.CodeFilePath))
+                foreach (var fileTests in fileSequentialTestsParallelTests.GroupBy(test => test.CodeFilePath))
                 {
                     var testRuns = new ConcurrentBag<Task>();
                     Parallel.ForEach(fileTests.SelectMany(fileTest => fileTests), test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
@@ -144,10 +144,27 @@ namespace Yunit
                 }
             }
 
-            var nonParallelTests = groupTests.Where(group => group.Key == ParallelLevel.None).SelectMany(group => group);
-            if (nonParallelTests.Any())
+            var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group);
+            if (fileSequentialTestsParallelTests.Any())
             {
-                foreach(var test in nonParallelTests)
+                var testRuns = new ConcurrentBag<Task>();
+                foreach (var fileTests in fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath))
+                {
+                    testRuns.Add(Task.Run(async () =>
+                    {
+                        foreach (var test in fileTests)
+                        {
+                            await RunTest(frameworkHandle, test, inOnlyMode);
+                        }
+                    }));
+                }
+                Task.WhenAll(testRuns).GetAwaiter().GetResult();
+            }
+
+            var sequentialTests = groupTests.Where(group => group.Key == ParallelMode.Sequential).SelectMany(group => group);
+            if (sequentialTests.Any())
+            {
+                foreach(var test in sequentialTests)
                 {
                     RunTest(frameworkHandle, test, inOnlyMode).GetAwaiter().GetResult();
                 }
@@ -243,7 +260,7 @@ namespace Yunit
             return null;
         }
 
-        private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex, int timeout, ParallelLevel parallelLevel)
+        private static TestCase CreateTestCase(TestData data, Type type, MethodInfo method, string source, int attributeIndex, int timeout, ParallelMode parallelLevel)
         {
             var displayName = string.IsNullOrEmpty(data.Matrix)
                 ? $"{Path.GetFileName(data.FilePath)}/{data.Ordinal:D2}: {data.Summary}"
