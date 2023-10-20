@@ -17,7 +17,7 @@ namespace yunit.test
         static readonly ConcurrentDictionary<string, DateTime> s_fileParallelLevelTestsEndTime = new();
 
         [MarkdownTest("~/test/yunit.test/yunit.test.nonparallel.md", ParallelLevel = ParallelLevel.None)]
-        public async Task TestWithAllParallelLevel()
+        public async Task TestWithNonParallelLevel()
         {
             if (s_isAllParallelLevelTestRunning)
             {
