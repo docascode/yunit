@@ -123,7 +123,7 @@ namespace Yunit
             
             var inOnlyMode = tests.Any(test => test.DisplayName.IndexOf("[only]", 0, StringComparison.OrdinalIgnoreCase) >= 0);
 
-            var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelLevel>(s_parallelLevelProperty, ParallelLevel.All));
+            var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelLevel>(s_parallelLevelProperty, ParallelLevel.All)).ToArray();
 
             var allParallelTests = groupTests.Where(group => group.Key == ParallelLevel.All).SelectMany(group => group);
             if (allParallelTests.Any())
