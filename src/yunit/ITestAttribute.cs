@@ -13,6 +13,8 @@ namespace Yunit
 
         int Timeout { get; }
 
+        ParallelLevel ParallelLevel { get; }
+
         void DiscoverTests(string path, Action<TestData> report);
     }
 }
