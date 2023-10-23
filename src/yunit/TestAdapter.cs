@@ -148,13 +148,16 @@ namespace Yunit
             if (fileSequentialTestsParallelTests.Any())
             {
                 var testRuns = new ConcurrentBag<Task>();
-                Parallel.ForEach(fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray(), fileTests => testRuns.Add(Task.Run(async () =>
+                foreach (var fileTests in fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray())
                 {
-                    foreach (var test in fileTests)
+                    testRuns.Add(Task.Run(async () =>
                     {
-                        await RunTest(frameworkHandle, test, inOnlyMode);
-                    }
-                })));
+                        foreach (var test in fileTests)
+                        {
+                            await RunTest(frameworkHandle, test, inOnlyMode);
+                        }
+                    }));
+                }
                 Task.WhenAll(testRuns).GetAwaiter().GetResult();
             }
 
