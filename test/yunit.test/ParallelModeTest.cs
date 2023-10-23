@@ -18,7 +18,7 @@ namespace yunit.test
 
         static readonly ConcurrentDictionary<string, bool> s_isFileSequentialTestsParallelModeTestsRunning = new();
 
-        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode.1.md", ParallelLevel = ParallelMode.Sequential)]
+        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode.1.md", ParallelMode = ParallelMode.Sequential)]
         public async Task TestWithParallelMode()
         {
             if (s_isParallelModeTestRunning)
@@ -30,7 +30,7 @@ namespace yunit.test
             s_isParallelModeTestRunning = false;
         }
 
-        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode*.md", ParallelLevel = ParallelMode.FileSequentialTestsParallel)]
+        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode*.md", ParallelMode = ParallelMode.FileSequentialTestsParallel)]
         public async Task TestWithFileSequentialTestsParallelMode(TestData data)
         {
             string path = data.FilePath;
@@ -44,7 +44,7 @@ namespace yunit.test
             }
         }
 
-        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode*.md", ParallelLevel = ParallelMode.FileParallelTestsSequential)]
+        [MarkdownTest("~/test/yunit.test/yunit.test.parallelmode*.md", ParallelMode = ParallelMode.FileParallelTestsSequential)]
         public async Task TestWithFileParallelTestsSequentialMode(TestData data)
         {
             string path = data.FilePath;

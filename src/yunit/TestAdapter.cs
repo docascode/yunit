@@ -96,7 +96,7 @@ namespace Yunit
                             {
                                 if (expandMethodType is null || expandMethod is null)
                                 {
-                                    sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout, attribute.ParallelLevel));
+                                    sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout, attribute.ParallelMode));
                                 }
                                 else
                                 {
@@ -107,7 +107,7 @@ namespace Yunit
                                         {
                                             var matrixData = data.Clone();
                                             data.Matrix = matrix;
-                                            sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout, attribute.ParallelLevel));
+                                            sendTestCase(CreateTestCase(data, type, method, source, i, attribute.Timeout, attribute.ParallelMode));
                                         }
                                     }
                                 }
@@ -147,18 +147,13 @@ namespace Yunit
             var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group).ToArray();
             if (fileSequentialTestsParallelTests.Any())
             {
-                var testRuns = new ConcurrentBag<Task>();
-                foreach (var fileTests in fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath))
+                Parallel.ForEach(fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray(), async fileTests =>
                 {
-                    testRuns.Add(Task.Run(async () =>
+                    foreach (var test in fileTests)
                     {
-                        foreach (var test in fileTests)
-                        {
-                            await RunTest(frameworkHandle, test, inOnlyMode);
-                        }
-                    }));
-                }
-                Task.WhenAll(testRuns).GetAwaiter().GetResult();
+                        await RunTest(frameworkHandle, test, inOnlyMode);
+                    }
+                });
             }
 
             var sequentialTests = groupTests.Where(group => group.Key == ParallelMode.Sequential).SelectMany(group => group).ToArray();

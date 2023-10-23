@@ -43,7 +43,7 @@ namespace Yunit
         /// <summary>
         /// Gets or sets the parallel level of the test case.
         /// </summary>
-        public ParallelMode ParallelLevel { get; set; } = ParallelMode.Parallel;
+        public ParallelMode ParallelMode { get; set; } = ParallelMode.Parallel;
 
 
         public MarkdownTestAttribute(string glob = null) => Glob = glob;

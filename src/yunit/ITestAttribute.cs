@@ -13,7 +13,7 @@ namespace Yunit
 
         int Timeout { get; }
 
-        ParallelMode ParallelLevel { get; }
+        ParallelMode ParallelMode { get; }
 
         void DiscoverTests(string path, Action<TestData> report);
     }
