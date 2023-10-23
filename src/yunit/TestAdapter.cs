@@ -125,7 +125,7 @@ namespace Yunit
 
             var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelMode>(s_parallelLevelProperty, ParallelMode.Parallel)).ToArray();
 
-            var parallelTests = groupTests.Where(group => group.Key == ParallelMode.Parallel).SelectMany(group => group);
+            var parallelTests = groupTests.Where(group => group.Key == ParallelMode.Parallel).SelectMany(group => group).ToArray();
             if (parallelTests.Any())
             {
                 var testRuns = new ConcurrentBag<Task>();
@@ -133,7 +133,7 @@ namespace Yunit
                 Task.WhenAll(testRuns).GetAwaiter().GetResult();
             }
 
-            var fileSequentialTestsParallelTests = groupTests.Where(group => group.Key == ParallelMode.FileSequentialTestsParallel).SelectMany(group => group);
+            var fileSequentialTestsParallelTests = groupTests.Where(group => group.Key == ParallelMode.FileSequentialTestsParallel).SelectMany(group => group).ToArray();
             if (fileSequentialTestsParallelTests.Any())
             {
                 foreach (var fileTests in fileSequentialTestsParallelTests.GroupBy(test => test.CodeFilePath))
@@ -144,7 +144,7 @@ namespace Yunit
                 }
             }
 
-            var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group);
+            var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group).ToArray();
             if (fileSequentialTestsParallelTests.Any())
             {
                 var testRuns = new ConcurrentBag<Task>();
@@ -161,7 +161,7 @@ namespace Yunit
                 Task.WhenAll(testRuns).GetAwaiter().GetResult();
             }
 
-            var sequentialTests = groupTests.Where(group => group.Key == ParallelMode.Sequential).SelectMany(group => group);
+            var sequentialTests = groupTests.Where(group => group.Key == ParallelMode.Sequential).SelectMany(group => group).ToArray();
             if (sequentialTests.Any())
             {
                 foreach(var test in sequentialTests)
