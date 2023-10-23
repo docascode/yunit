@@ -40,6 +40,12 @@ namespace Yunit
         /// </summary>
         public int Timeout { get; set; } = 60000;
 
+        /// <summary>
+        /// Gets or sets the parallel level of the test case.
+        /// </summary>
+        public ParallelMode ParallelMode { get; set; } = ParallelMode.Parallel;
+
+
         public MarkdownTestAttribute(string glob = null) => Glob = glob;
 
         private enum MarkdownReadState
