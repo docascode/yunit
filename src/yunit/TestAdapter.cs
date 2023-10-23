@@ -120,7 +120,7 @@ namespace Yunit
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
-            
+
             var inOnlyMode = tests.Any(test => test.DisplayName.IndexOf("[only]", 0, StringComparison.OrdinalIgnoreCase) >= 0);
 
             var groupTests = tests.GroupBy(test => test.GetPropertyValue<ParallelMode>(s_parallelLevelProperty, ParallelMode.Parallel)).ToArray();
@@ -147,19 +147,21 @@ namespace Yunit
             var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group).ToArray();
             if (fileSequentialTestsParallelTests.Any())
             {
-                Parallel.ForEach(fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray(), async fileTests =>
+                var testRuns = new ConcurrentBag<Task>();
+                Parallel.ForEach(fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray(), fileTests => testRuns.Add(Task.Run(async () =>
                 {
                     foreach (var test in fileTests)
                     {
                         await RunTest(frameworkHandle, test, inOnlyMode);
                     }
-                });
+                })));
+                Task.WhenAll(testRuns).GetAwaiter().GetResult();
             }
 
             var sequentialTests = groupTests.Where(group => group.Key == ParallelMode.Sequential).SelectMany(group => group).ToArray();
             if (sequentialTests.Any())
             {
-                foreach(var test in sequentialTests)
+                foreach (var test in sequentialTests)
                 {
                     RunTest(frameworkHandle, test, inOnlyMode).GetAwaiter().GetResult();
                 }
