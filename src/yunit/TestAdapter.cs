@@ -139,13 +139,13 @@ namespace Yunit
                 foreach (var fileTests in fileSequentialTestsParallelTests.GroupBy(test => test.CodeFilePath))
                 {
                     var testRuns = new ConcurrentBag<Task>();
-                    Parallel.ForEach(fileTests.SelectMany(fileTest => fileTests), test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
+                    Parallel.ForEach(fileTests.ToArray(), test => testRuns.Add(RunTest(frameworkHandle, test, inOnlyMode)));
                     Task.WhenAll(testRuns).GetAwaiter().GetResult();
                 }
             }
 
             var fileParallelTestsSequentialTests = groupTests.Where(group => group.Key == ParallelMode.FileParallelTestsSequential).SelectMany(group => group).ToArray();
-            if (fileSequentialTestsParallelTests.Any())
+            if (fileParallelTestsSequentialTests.Any())
             {
                 var testRuns = new ConcurrentBag<Task>();
                 foreach (var fileTests in fileParallelTestsSequentialTests.GroupBy(test => test.CodeFilePath).ToArray())
