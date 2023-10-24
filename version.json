@@ -1,6 +1,0 @@
-{
-    "version": "1.0.0-preview.{height}",
-    "publicReleaseRefSpec": [
-        "^refs/tags/v\\d+\\.\\d+$"
-    ]
-}
