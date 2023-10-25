@@ -242,6 +242,7 @@ namespace Yunit
             finally
             {
                 result.EndTime = DateTime.UtcNow;
+                result.Duration = result.EndTime - result.StartTime;
 
                 lock (s_lock)
                 {
