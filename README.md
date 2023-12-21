@@ -111,7 +111,7 @@ The bare metal comparison expect the actual object to match exactly the same as 
 
 method |  description | example
 -------|-----------------------------------------------|-------------
-`UseIgnoreNull` | Ignore the actual result of a property if the expected value is null | `{ "a": null }` matches `{”a": xxx}` where `xxx` could be anything
+`UseIgnoreNull` | Ignore the actual result of a property if the expected value is null | `{ "a": null }` matches `{"a": xxx}` where `xxx` could be anything
 `UseNegate` | Assert the actual result must not be the expected result if the expected value starts with `!` | Given an expectation of `{ "a": "!value"}` , `{"a": "value"} should fail
 `UseRegex` | The value must match a regex if the expectation looks like `/{regex}/` | `{"a": "/^.*$/" }` uses `^.*$` to match the actual value
 `UseWildcard` | Use wildcard match if the expectation contains `*` | `{"a": "a*" }` uses wildcard `a*` to match against actual value
